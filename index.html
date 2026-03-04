@@ -175,35 +175,11 @@
             font-weight: bold;
             color: #1d5e3f;
             font-size: 1.1rem;
-            margin-bottom: 4px;
-        }
-        .business-meta {
-            font-size: 0.85rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-        .business-type {
-            background: #c0d8b0;
-            padding: 3px 12px;
-            border-radius: 20px;
-            color: #1d5e3f;
-            font-weight: 500;
+            margin-bottom: 2px;
         }
         .business-distance {
             color: #b76e2e;
-            background: #f5e6d3;
-            padding: 3px 12px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-        .business-category {
-            background: #a8c99e;
-            padding: 3px 12px;
-            border-radius: 20px;
-            color: #1d5e3f;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
         }
         .empty-message {
             color: #2d5a2d;
@@ -426,7 +402,7 @@
         return '📍';
     }
 
-    // ---------- UI with fixed formatting ----------
+    // ---------- UI with just ONE bubble (the emoji) ----------
     function updateUI() {
         const count = collectedPlaces.size;
         scoreSpan.innerText = count;
@@ -448,11 +424,7 @@
                         <span>${index + 1}</span>
                         <div class="business-details">
                             <div class="business-name">${category} ${place.name}</div>
-                            <div class="business-meta">
-                                <span class="business-type">${place.displayType}</span>
-                                <span class="business-distance">${place.distance}</span>
-                                ${place.category ? `<span class="business-category">${place.category}</span>` : ''}
-                            </div>
+                            <div class="business-distance">${place.distance}</div>
                         </div>
                     </div>
                 `;
@@ -593,18 +565,10 @@
             // Clean up name
             name = name.charAt(0).toUpperCase() + name.slice(1);
             
-            // Get display type (fixed formatting)
-            const displayType = formatBusinessType(tags);
-            
-            // Get category/icon
-            const category = getBusinessCategory(tags);
-            
-            // Create detailed entry with fixed formatting
+            // Create detailed entry (still store all data, but UI only shows what we want)
             const business = {
                 id: nodeId,
                 name: name,
-                displayType: displayType,  // Fixed: always a string
-                category: category,
                 distance: `${distanceFeet}ft`,
                 lat: el.lat,
                 lon: el.lon,
