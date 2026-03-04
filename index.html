@@ -1,1 +1,686 @@
-test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>NOLA 75 · LIVE business hunt</title>
+    <style>
+        /* ... (keep all the previous styles - they're the same) ... */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            background: #0b1a2e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            margin: 0;
+        }
+        .game-container {
+            background: #faf3e0;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 48px 48px 32px 32px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.5), 0 0 0 2px #c9a959 inset;
+            padding: 24px 20px 30px;
+            text-align: center;
+            border: 1px solid #e8d5b5;
+        }
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #1e4a6d;
+            text-shadow: 3px 3px 0 #e0b060;
+            margin-top: -8px;
+            margin-bottom: 10px;
+            word-break: break-word;
+        }
+        .fleur {
+            font-size: 1.2rem;
+            color: #b76e2e;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+        .score-panel {
+            background: #1e2f47;
+            border-radius: 120px;
+            padding: 20px 15px;
+            margin: 12px 0 18px;
+            color: #ffd966;
+            border: 3px solid #cf9e4f;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
+        }
+        .score-number {
+            font-size: 5rem;
+            font-weight: 900;
+            line-height: 1;
+            display: block;
+            text-shadow: 0 0 12px #ffb347;
+        }
+        .score-label {
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: #0f263b;
+            display: inline-block;
+            padding: 5px 22px;
+            border-radius: 40px;
+            margin-top: 4px;
+            color: #ffc857;
+            border: 1px solid #b8863d;
+        }
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            padding: 18px 12px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 60px;
+            background: #e6b13e;
+            color: #1a2e44;
+            box-shadow: 0 8px 0 #8b5a2b, 0 10px 16px rgba(0,0,0,0.3);
+            transition: all 0.06s ease-out;
+            margin: 10px 0 5px;
+            cursor: pointer;
+            touch-action: manipulation;
+            border: 2px solid #ffe39a;
+        }
+        .btn-primary:active, .btn-secondary:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #6b441e, 0 5px 12px rgba(0,0,0,0.3);
+        }
+        .btn-primary:disabled, .btn-secondary:disabled {
+            opacity: 0.5;
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #6b441e;
+            pointer-events: none;
+        }
+        .btn-secondary {
+            background: #5680a7;
+            box-shadow: 0 6px 0 #24435b, 0 8px 14px rgba(0,0,0,0.3);
+            font-size: 1.3rem;
+            padding: 14px 12px;
+            color: white;
+            border-color: #aaccf0;
+        }
+        .reset-row {
+            display: flex;
+            gap: 12px;
+            margin: 22px 0 12px;
+        }
+        .reset-row .btn-secondary {
+            width: auto;
+            flex: 1;
+            font-size: 1.2rem;
+            padding: 12px 6px;
+        }
+        .business-list {
+            background: #e9dccd;
+            border-radius: 40px 40px 24px 24px;
+            padding: 18px 12px 12px;
+            border: 2px dashed #b48c5c;
+            margin: 20px 0 8px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+        .list-title {
+            font-weight: 600;
+            color: #422b12;
+            background: #f2e1c0;
+            display: inline-block;
+            padding: 4px 22px;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            margin-bottom: 14px;
+        }
+        .collected-item {
+            background: white;
+            border-radius: 50px;
+            padding: 10px 18px;
+            margin: 6px 0;
+            font-size: 1.1rem;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 8px solid #d4a13e;
+            font-weight: 500;
+            word-break: break-word;
+        }
+        .collected-item span {
+            background: #1e4a6d;
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .empty-message {
+            color: #674523;
+            padding: 16px;
+            font-style: italic;
+            background: #ecdbbd;
+            border-radius: 60px;
+        }
+        .status-message {
+            background: #1e2f47;
+            color: #d4d4aa;
+            padding: 10px;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            margin: 14px 0 6px;
+            border: 1px solid #8b6c45;
+            word-break: break-word;
+        }
+        .footer-note {
+            font-size: 0.8rem;
+            color: #7d613b;
+            margin-top: 16px;
+        }
+        .small-note {
+            font-size: 0.75rem;
+            color: #7d5d3a;
+            background: #f7e9d7;
+            border-radius: 30px;
+            padding: 6px;
+            margin-bottom: 8px;
+        }
+        .permission-hint {
+            background: #FFF3CD;
+            color: #856404;
+            border-radius: 30px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            margin: 8px 0;
+            border: 1px solid #FFEEBA;
+        }
+        .warning-box {
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 30px;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #f5c6cb;
+            font-weight: bold;
+        }
+        .player-id-badge {
+            background: #4a6b8a;
+            color: white;
+            border-radius: 40px;
+            padding: 6px 15px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 8px;
+            border: 1px solid #ffd966;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>⚜️ NOLA ∞⚜️</h1>
+    <div class="fleur">🏆 every shop & bar counts</div>
+
+    <!-- Player ID badge - shows it's per device -->
+    <div class="player-id-badge" id="playerIdBadge">📱 Your game</div>
+
+    <div class="score-panel">
+        <span class="score-number" id="scoreDisplay">0</span>
+        <span class="score-label">collected</span>
+    </div>
+
+    <button class="btn-primary" id="collectBtn">📍 COLLECT NEARBY</button>
+    <div class="status-message" id="statusMsg">Tap to scan real businesses within 75ft</div>
+    
+    <!-- Dynamic warning for local file access -->
+    <div id="localWarning" class="warning-box" style="display: none;"></div>
+    
+    <!-- Permission help container (dynamic) -->
+    <div id="permissionHelp" class="permission-hint" style="display: none;"></div>
+    
+    <div class="small-note">⚡ live from OpenStreetMap · bars, cafes, shops, galleries, etc.</div>
+
+    <div class="business-list" id="businessListContainer">
+        <div class="list-title">⚜️ your haul ⚜️</div>
+        <div id="collectedNames"></div>
+    </div>
+
+    <div class="reset-row">
+        <button class="btn-secondary" id="resetBtn">🗑️ RESET</button>
+        <button class="btn-secondary" id="demoBtn">🎲 demo (french quarter)</button>
+    </div>
+    <div class="footer-note">✅ Data stays on YOUR phone · Others can't see it</div>
+</div>
+
+<script>
+(function() {
+    // ---------- CONSTANTS ----------
+    const FEET_75_IN_METERS = 22.86;
+    
+    // Each user gets their OWN storage key based on a device fingerprint
+    // This ensures no overlap between different people's collections
+    function getStorageKey() {
+        // Create a simple device fingerprint
+        const screenInfo = `${screen.width}x${screen.height}x${screen.colorDepth}`;
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const language = navigator.language || 'en';
+        const platform = navigator.platform || 'unknown';
+        
+        // Combine into a fingerprint string
+        const fingerprint = [screenInfo, timezone, language, platform].join('|');
+        
+        // Create a simple hash
+        let hash = 0;
+        for (let i = 0; i < fingerprint.length; i++) {
+            const char = fingerprint.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32-bit integer
+        }
+        
+        // Return a unique storage key for this device
+        return `nola_collection_${Math.abs(hash)}`;
+    }
+
+    const STORAGE_KEY = getStorageKey();
+
+    // Overpass API endpoint (supports JSONP)
+    const OVERPASS_ENDPOINT = 'https://overpass-api.de/api/interpreter';
+
+    // ---------- STATE ----------
+    let collectedPlaces = new Map();
+    let isLoading = false;
+    let currentScript = null;
+
+    // ---------- DOM ----------
+    const scoreSpan = document.getElementById('scoreDisplay');
+    const collectBtn = document.getElementById('collectBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const demoBtn = document.getElementById('demoBtn');
+    const statusDiv = document.getElementById('statusMsg');
+    const collectedDiv = document.getElementById('collectedNames');
+    const permissionDiv = document.getElementById('permissionHelp');
+    const localWarningDiv = document.getElementById('localWarning');
+    const playerIdBadge = document.getElementById('playerIdBadge');
+
+    // Show device-specific badge
+    playerIdBadge.innerHTML = `📱 Your game · ID: ${STORAGE_KEY.slice(-8)}`;
+
+    // ---------- Check if running locally (file:// protocol) ----------
+    function isRunningLocally() {
+        return window.location.protocol === 'file:';
+    }
+
+    // ---------- Show warning for local file access ----------
+    function checkLocalAndWarn() {
+        if (isRunningLocally()) {
+            localWarningDiv.innerHTML = '⚠️ You\'re opening this file locally (file://). Geolocation won\'t work!<br><br>📱 To fix: Upload to GitHub Pages or any HTTPS server.';
+            localWarningDiv.style.display = 'block';
+            collectBtn.disabled = true;
+            statusDiv.innerText = '❌ Geolocation blocked on local files';
+            return true;
+        } else {
+            localWarningDiv.style.display = 'none';
+            collectBtn.disabled = false;
+            
+            if (window.location.protocol !== 'https:') {
+                statusDiv.innerText = '⚠️ For best results, use HTTPS (some browsers require it)';
+            }
+            return false;
+        }
+    }
+
+    // ---------- LOAD / SAVE (per device) ----------
+    function loadCollected() {
+        try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            console.log(`Loading from key: ${STORAGE_KEY}`); // Debug
+            if (stored) {
+                const arr = JSON.parse(stored);
+                if (Array.isArray(arr)) {
+                    collectedPlaces.clear();
+                    arr.forEach(item => {
+                        if (item && item.id) {
+                            collectedPlaces.set(String(item.id), {
+                                id: String(item.id),
+                                name: item.name || 'unknown place'
+                            });
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('failed to load', e);
+            collectedPlaces.clear();
+        }
+        updateUI();
+    }
+
+    function saveCollected() {
+        try {
+            const arr = Array.from(collectedPlaces.values());
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+            console.log(`Saved to key: ${STORAGE_KEY}, count: ${arr.length}`); // Debug
+        } catch (e) {}
+    }
+
+    // ---------- UI update ----------
+    function updateUI() {
+        const count = collectedPlaces.size;
+        scoreSpan.innerText = count;
+
+        let html = '';
+        if (count === 0) {
+            html = '<div class="empty-message">✨ no businesses yet — start walking ✨</div>';
+        } else {
+            let i = 1;
+            for (let place of collectedPlaces.values()) {
+                html += `<div class="collected-item"><span>${i++}</span> ${place.name}</div>`;
+            }
+        }
+        collectedDiv.innerHTML = html;
+    }
+
+    // ---------- Platform-specific permission help ----------
+    function showPermissionHelp(permissionDenied = false) {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isAndroid = /Android/.test(navigator.userAgent);
+        
+        let message = '';
+        if (isIOS && permissionDenied) {
+            message = '🍎 iOS: Go to Settings > Privacy > Location Services, and also ensure Safari location access is enabled. Then refresh this page.';
+        } else if (isAndroid && permissionDenied) {
+            message = '🤖 Android: Open Settings > Location > App permissions, find your browser and set to "Allow only while using the app". Then refresh.';
+        } else if (isIOS) {
+            message = '🍎 iOS will ask for permission — tap "Allow" when prompted. If denied, check Settings.';
+        } else if (isAndroid) {
+            message = '🤖 Android will ask for permission — tap "Allow" when prompted. If denied, check app settings.';
+        } else {
+            message = '📍 Please allow location access when prompted by your browser.';
+        }
+        
+        permissionDiv.innerHTML = message;
+        permissionDiv.style.display = 'block';
+        
+        if (!permissionDenied) {
+            setTimeout(() => {
+                permissionDiv.style.display = 'none';
+            }, 8000);
+        }
+    }
+
+    // ---------- OVERPASS JSONP CALL ----------
+    function overpassRequest(lat, lng, callbackName, timeoutMs = 10000) {
+        const radius = FEET_75_IN_METERS.toFixed(2);
+        const query = `[out:json];(node["amenity"](around:${radius},${lat},${lng});node["shop"](around:${radius},${lat},${lng}););out;`;
+
+        const url = `${OVERPASS_ENDPOINT}?data=${encodeURIComponent(query)}&jsonp=${callbackName}`;
+
+        if (currentScript && currentScript.parentNode) {
+            currentScript.parentNode.removeChild(currentScript);
+            currentScript = null;
+        }
+
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            currentScript = script;
+
+            const timer = setTimeout(() => {
+                if (script.parentNode) script.parentNode.removeChild(script);
+                reject(new Error('Request timeout'));
+            }, timeoutMs);
+
+            window[callbackName] = (data) => {
+                clearTimeout(timer);
+                if (script.parentNode) script.parentNode.removeChild(script);
+                delete window[callbackName];
+                currentScript = null;
+                resolve(data);
+            };
+
+            script.onerror = () => {
+                clearTimeout(timer);
+                if (script.parentNode) script.parentNode.removeChild(script);
+                delete window[callbackName];
+                currentScript = null;
+                reject(new Error('Script loading failed'));
+            };
+
+            script.src = url;
+            document.head.appendChild(script);
+        });
+    }
+
+    // ---------- Process Overpass response ----------
+    function processBusinesses(data) {
+        if (!data || !data.elements || !Array.isArray(data.elements)) {
+            return { newCount: 0, totalFound: 0 };
+        }
+
+        const elements = data.elements;
+        let newlyAdded = 0;
+
+        for (let el of elements) {
+            if (el.type !== 'node') continue;
+            const nodeId = String(el.id);
+            if (collectedPlaces.has(nodeId)) continue;
+
+            let name = el.tags && (el.tags.name || el.tags['name:en'] || el.tags.brand);
+            if (!name) {
+                const amenity = el.tags && (el.tags.amenity || el.tags.shop);
+                name = amenity ? `unknown ${amenity}` : 'unknown place';
+            } else {
+                const type = el.tags.amenity || el.tags.shop;
+                if (type) name = `${name} (${type})`;
+            }
+
+            collectedPlaces.set(nodeId, { id: nodeId, name: name });
+            newlyAdded++;
+        }
+
+        if (newlyAdded > 0) {
+            saveCollected();
+            updateUI();
+        }
+
+        return { newCount: newlyAdded, totalFound: elements.length };
+    }
+
+    // ---------- Main scan (GPS + Overpass) ----------
+    function handleCollect() {
+        if (isLoading) return;
+        if (isRunningLocally()) {
+            checkLocalAndWarn();
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            statusDiv.innerText = "❌ geolocation not supported.";
+            return;
+        }
+
+        isLoading = true;
+        collectBtn.disabled = true;
+        statusDiv.innerText = "📡 getting GPS...";
+        
+        showPermissionHelp(false);
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                statusDiv.innerText = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)} · querying OpenStreetMap...`;
+                permissionDiv.style.display = 'none';
+
+                try {
+                    const callbackName = 'overpass_' + Date.now();
+                    const data = await overpassRequest(lat, lng, callbackName);
+                    const { newCount, totalFound } = processBusinesses(data);
+
+                    if (newCount > 0) {
+                        statusDiv.innerText = `✅ +${newCount} new business${newCount>1?'es':''} collected (found ${totalFound})`;
+                    } else {
+                        statusDiv.innerText = `👣 no new businesses within 75ft. (${totalFound} already known?)`;
+                    }
+                } catch (err) {
+                    console.warn(err);
+                    statusDiv.innerText = "❌ Overpass error: " + (err.message || 'unknown');
+                } finally {
+                    isLoading = false;
+                    collectBtn.disabled = false;
+                }
+            },
+            (error) => {
+                let msg = "❌ location error: ";
+                let showPermHelp = false;
+                switch (error.code) {
+                    case error.PERMISSION_DENIED: 
+                        msg += "permission denied. Enable location access.";
+                        showPermHelp = true;
+                        break;
+                    case error.POSITION_UNAVAILABLE: 
+                        msg += "unavailable (GPS signal?).";
+                        break;
+                    case error.TIMEOUT: 
+                        msg += "timeout — try again.";
+                        break;
+                    default: 
+                        msg += "unknown error.";
+                }
+                statusDiv.innerText = msg;
+                if (showPermHelp) {
+                    showPermissionHelp(true);
+                }
+                isLoading = false;
+                collectBtn.disabled = false;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 8000
+            }
+        );
+    }
+
+    // ---------- DEMO ----------
+    async function demoScan() {
+        if (isLoading) return;
+
+        isLoading = true;
+        collectBtn.disabled = true;
+        demoBtn.disabled = true;
+        statusDiv.innerText = "🎲 demo: scanning near Jackson Square...";
+
+        const demoLat = 29.9576;
+        const demoLng = -90.0635;
+
+        try {
+            const callbackName = 'overpass_demo_' + Date.now();
+            const data = await overpassRequest(demoLat, demoLng, callbackName);
+            const { newCount, totalFound } = processBusinesses(data);
+
+            if (newCount > 0) {
+                statusDiv.innerText = `🎉 demo: +${newCount} new (found ${totalFound} nearby)`;
+            } else {
+                statusDiv.innerText = `📦 demo: no new (${totalFound} already in collection?)`;
+            }
+        } catch (err) {
+            statusDiv.innerText = "❌ demo error: " + (err.message || 'network');
+        } finally {
+            isLoading = false;
+            collectBtn.disabled = false;
+            demoBtn.disabled = false;
+        }
+    }
+
+    // ---------- RESET ----------
+    function resetProgress() {
+        if (isLoading) return;
+        if (confirm('🗑️ Reset all collected businesses?')) {
+            collectedPlaces.clear();
+            saveCollected();
+            updateUI();
+            statusDiv.innerText = "reset — start fresh!";
+        }
+    }
+
+    // ---------- Check permission state ----------
+    function checkPermissionAndCollect() {
+        if (isRunningLocally()) {
+            checkLocalAndWarn();
+            return;
+        }
+
+        if (!navigator.permissions || !navigator.permissions.query) {
+            handleCollect();
+            return;
+        }
+        
+        navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
+            if (permissionStatus.state === 'denied') {
+                statusDiv.innerText = "❌ Location access blocked.";
+                showPermissionHelp(true);
+                return;
+            } else {
+                handleCollect();
+            }
+            
+            permissionStatus.onchange = () => {
+                if (permissionStatus.state === 'granted') {
+                    statusDiv.innerText = "✅ Location permission granted!";
+                    permissionDiv.style.display = 'none';
+                } else if (permissionStatus.state === 'denied') {
+                    showPermissionHelp(true);
+                }
+            };
+        }).catch(() => {
+            handleCollect();
+        });
+    }
+
+    // ---------- EVENT LISTENERS ----------
+    collectBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        checkPermissionAndCollect();
+    });
+    
+    resetBtn.addEventListener('click', resetProgress);
+    demoBtn.addEventListener('click', demoScan);
+
+    // Initial setup
+    loadCollected();
+    checkLocalAndWarn();
+
+    // Check permission state on load
+    window.addEventListener('load', function() {
+        if (!isRunningLocally() && navigator.permissions) {
+            navigator.permissions.query({ name: 'geolocation' }).then(perm => {
+                if (perm.state === 'denied') {
+                    showPermissionHelp(true);
+                } else if (perm.state === 'prompt') {
+                    showPermissionHelp(false);
+                }
+            }).catch(() => {});
+        }
+    });
+
+    // Cleanup
+    window.addEventListener('unload', function() {
+        if (currentScript && currentScript.parentNode) {
+            currentScript.parentNode.removeChild(currentScript);
+        }
+    });
+})();
+</script>
+</body>
+</html>
