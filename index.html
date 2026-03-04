@@ -153,6 +153,15 @@
             box-shadow: 0 4px 0 #2d6a4f;
             pointer-events: none;
         }
+        .timer-text {
+            font-size: 0.9rem;
+            color: #ffd966;
+            margin-top: 5px;
+            background: #1a4d2e;
+            padding: 5px;
+            border-radius: 20px;
+            display: inline-block;
+        }
         .reset-btn {
             background: #5a9e7a;
             box-shadow: 0 6px 0 #2d6a4f, 0 8px 14px rgba(0,0,0,0.3);
@@ -314,6 +323,7 @@
     </div>
 
     <button class="btn-primary" id="collectBtn"> CHOMP NEARBY (100ft)</button>
+    <div id="timerDisplay" class="timer-text"></div>
     <div class="status-message" id="statusMsg">Tap to find gator snacks within 100 feet</div>
 
     <div id="localWarning" class="warning-box" style="display: none;"></div>
@@ -339,6 +349,9 @@
 (function() {
     // ---------- CONSTANTS ----------
     const FEET_100_IN_METERS = 30.48;  // Exactly 100 feet
+    const COOLDOWN_MINUTES = 30;       // 30 minute cooldown
+    const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000;
+    const TIMER_STORAGE_KEY = 'gator_last_chomp';
 
     // Create unique storage key per device
     function getStorageKey() {
@@ -367,6 +380,7 @@
     let collectedPlaces = new Map();
     let isLoading = false;
     let playerName = '';
+    let timerInterval = null;
 
     // DOM elements
     const scoreSpan = document.getElementById('scoreDisplay');
@@ -378,9 +392,132 @@
     const localWarningDiv = document.getElementById('localWarning');
     const playerIdBadge = document.getElementById('playerIdBadge');
     const playerNameInput = document.getElementById('playerNameInput');
+    const timerDisplay = document.getElementById('timerDisplay');
 
     // Show Gator ID with last 5 digits
     playerIdBadge.innerHTML = `🐊 Gator ID: ${STORAGE_KEY.slice(-5)} 🐊`;
+
+    // ---------- TIMER FUNCTIONS ----------
+    function getLastChompTime() {
+        try {
+            const saved = localStorage.getItem(TIMER_STORAGE_KEY);
+            return saved ? parseInt(saved) : 0;
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    function setLastChompTime(time) {
+        try {
+            localStorage.setItem(TIMER_STORAGE_KEY, time.toString());
+        } catch (e) {}
+    }
+
+    function updateButtonState() {
+        const lastChomp = getLastChompTime();
+        const now = Date.now();
+        const timeLeft = lastChomp + COOLDOWN_MS - now;
+        
+        if (timeLeft > 0) {
+            // Button is disabled
+            collectBtn.disabled = true;
+            const minutesLeft = Math.floor(timeLeft / 60000);
+            const secondsLeft = Math.floor((timeLeft % 60000) / 1000);
+            timerDisplay.innerText = `⏳ Ready in ${minutesLeft}:${secondsLeft.toString().padStart(2, '0')}`;
+            return true;
+        } else {
+            // Button is enabled
+            collectBtn.disabled = false;
+            timerDisplay.innerText = `✅ Ready to chomp!`;
+            return false;
+        }
+    }
+
+    function startTimer() {
+        // Clear any existing interval
+        if (timerInterval) {
+            clearInterval(timerInterval);
+        }
+        
+        // Update immediately
+        updateButtonState();
+        
+        // Set up interval to update every second
+        timerInterval = setInterval(updateButtonState, 1000);
+    }
+
+    // Modify handleCollect to set the timer
+    async function handleCollect() {
+        if (isLoading) return;
+
+        // Check if on cooldown
+        const lastChomp = getLastChompTime();
+        const now = Date.now();
+        if (now - lastChomp < COOLDOWN_MS) {
+            statusDiv.innerText = `⏰ Wait ${COOLDOWN_MINUTES} minutes between chomps!`;
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            statusDiv.innerText = "❌ geolocation not supported.";
+            return;
+        }
+
+        isLoading = true;
+        collectBtn.disabled = true;
+        statusDiv.innerText = "📡 getting GPS...";
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                statusDiv.innerText = `📍 Scanning 100ft around your position...`;
+
+                try {
+                    const data = await fetchNearbyBusinesses(lat, lng);
+                    const { newCount, totalFound } = processBusinesses(data, lat, lng);
+
+                    if (newCount > 0) {
+                        statusDiv.innerText = `🐊 +${newCount} new gator bites within 100ft! (found ${totalFound} total) 🐊`;
+                        // Set the last chomp time only if we actually collected something
+                        setLastChompTime(Date.now());
+                    } else {
+                        statusDiv.innerText = `👣 No new snacks in 100ft. (${totalFound} spots nearby, already in your swamp?)`;
+                        // Still set timer if they tried (prevents spamming even when no new spots)
+                        setLastChompTime(Date.now());
+                    }
+                } catch (error) {
+                    console.error('Scan error:', error);
+                    statusDiv.innerText = "❌ Couldn't reach the swamp. Try again!";
+                    // Don't set timer on error
+                } finally {
+                    isLoading = false;
+                    startTimer(); // Update button state based on new timestamp
+                }
+            },
+            (error) => {
+                let msg = "❌ location error: ";
+                if (error.code === error.PERMISSION_DENIED) {
+                    msg += "permission denied. Enable location access.";
+                    showPermissionHelp(true);
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    msg += "unavailable (GPS signal?).";
+                } else if (error.code === error.TIMEOUT) {
+                    msg += "timeout — try again.";
+                } else {
+                    msg += "unknown error.";
+                }
+                statusDiv.innerText = msg;
+                isLoading = false;
+                collectBtn.disabled = false; // Don't disable on error
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 5000
+            }
+        );
+    }
 
     // ---------- LOAD / SAVE name ----------
     function loadPlayerName() {
@@ -649,66 +786,6 @@
         return { newCount: newlyAdded, totalFound: elements.length };
     }
 
-    // ---------- Main scan ----------
-    async function handleCollect() {
-        if (isLoading) return;
-
-        if (!navigator.geolocation) {
-            statusDiv.innerText = "❌ geolocation not supported.";
-            return;
-        }
-
-        isLoading = true;
-        collectBtn.disabled = true;
-        statusDiv.innerText = "📡 getting GPS...";
-
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                statusDiv.innerText = `📍 Scanning 100ft around your position...`;
-
-                try {
-                    const data = await fetchNearbyBusinesses(lat, lng);
-                    const { newCount, totalFound } = processBusinesses(data, lat, lng);
-
-                    if (newCount > 0) {
-                        statusDiv.innerText = `🐊 +${newCount} new gator bites within 100ft! (found ${totalFound} total) 🐊`;
-                    } else {
-                        statusDiv.innerText = `👣 No new snacks in 100ft. (${totalFound} spots nearby, already in your swamp?)`;
-                    }
-                } catch (error) {
-                    console.error('Scan error:', error);
-                    statusDiv.innerText = "❌ Couldn't reach the swamp. Try again!";
-                } finally {
-                    isLoading = false;
-                    collectBtn.disabled = false;
-                }
-            },
-            (error) => {
-                let msg = "❌ location error: ";
-                if (error.code === error.PERMISSION_DENIED) {
-                    msg += "permission denied. Enable location access.";
-                    showPermissionHelp(true);
-                } else if (error.code === error.POSITION_UNAVAILABLE) {
-                    msg += "unavailable (GPS signal?).";
-                } else if (error.code === error.TIMEOUT) {
-                    msg += "timeout — try again.";
-                } else {
-                    msg += "unknown error.";
-                }
-                statusDiv.innerText = msg;
-                isLoading = false;
-                collectBtn.disabled = false;
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 15000,
-                maximumAge: 5000
-            }
-        );
-    }
-
     // ---------- Reset ----------
     function resetProgress() {
         if (isLoading) return;
@@ -720,6 +797,9 @@
             saveCollected();
             updateUI();
             statusDiv.innerText = "Swamp reset — start fresh!";
+            // Also reset the timer
+            setLastChompTime(0);
+            startTimer();
         }
     }
 
@@ -760,6 +840,7 @@
     // Initial load
     loadCollected();
     loadPlayerName();
+    startTimer(); // Start the timer on page load
 
     if (window.location.protocol === 'file:') {
         localWarningDiv.innerHTML = '⚠️ Open via GitHub Pages URL for location access';
