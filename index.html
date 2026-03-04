@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>NOLA Gator Hunt · 100ft collection</title>
+    <title>NOLA Gator Hunt</title>
     <style>
         * {
             box-sizing: border-box;
@@ -47,7 +47,7 @@
             margin-bottom: 12px;
             font-style: italic;
         }
-        
+
         /* Container for the two badges side by side */
         .badge-row {
             display: flex;
@@ -56,7 +56,7 @@
             margin-bottom: 15px;
             flex-wrap: wrap;
         }
-        
+
         .player-id-badge {
             background: #2d6a4f;
             color: white;
@@ -67,7 +67,7 @@
             border: 1px solid #ffd966;
             white-space: nowrap;
         }
-        
+
         /* New name badge - smaller like Gator ID, with purple diamond */
         .name-badge {
             background: #4a2d6a;  /* Purple background */
@@ -99,7 +99,7 @@
         .purple-diamond {
             font-size: 1rem;
         }
-        
+
         .score-panel {
             background: #1a4d2e;
             border-radius: 120px;
@@ -301,12 +301,12 @@
 
     <!-- Badge row with Gator ID and Name side by side - compact! -->
     <div class="badge-row">
-        <div class="player-id-badge" id="playerIdBadge">🐊 Your swamp</div>
-        
+        <div class="player-id-badge" id="playerIdBadge">🐊 Gator ID: </div>
+
         <!-- New compact name badge with purple diamond -->
         <div class="name-badge">
             <span class="purple-diamond">🦐</span>
-            <input type="text" id="playerNameInput" placeholder="your name" maxlength="15">
+            <input type="text" id="playerNameInput" placeholder="Gator Hunter" maxlength="15">
         </div>
     </div>
 
@@ -317,10 +317,10 @@
 
     <button class="btn-primary" id="collectBtn"> CHOMP NEARBY (100ft)</button>
     <div class="status-message" id="statusMsg">Tap to find gator snacks within 100 feet</div>
-    
+
     <div id="localWarning" class="warning-box" style="display: none;"></div>
     <div id="permissionHelp" class="permission-hint" style="display: none;"></div>
-    
+
     <div class="small-note">
         ⚡ Snaps every bar, shop, cafe, gallery within 100ft
     </div>
@@ -331,7 +331,7 @@
     </div>
 
     <button class="reset-btn" id="resetBtn">🗑️ RESET YOUR SWAMP</button>
-    
+
     <div class="footer-note">
         🐊 Each player has their own swamp 🐊
     </div>
@@ -341,30 +341,30 @@
 (function() {
     // ---------- CONSTANTS ----------
     const FEET_100_IN_METERS = 30.48;  // Exactly 100 feet
-    
+
     // Create unique storage key per device
     function getStorageKey() {
         const screenInfo = `${screen.width}x${screen.height}x${screen.colorDepth}`;
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const language = navigator.language || 'en';
         const platform = navigator.platform || 'unknown';
-        
+
         const fingerprint = [screenInfo, timezone, language, platform].join('|');
-        
+
         let hash = 0;
         for (let i = 0; i < fingerprint.length; i++) {
             const char = fingerprint.charCodeAt(i);
             hash = ((hash << 5) - hash) + char;
             hash = hash & hash;
         }
-        
+
         return `gator_100ft_${Math.abs(hash)}`;
     }
 
     const STORAGE_KEY = getStorageKey();
     const NAME_STORAGE_KEY = `${STORAGE_KEY}_name`;
     const OVERPASS_API = 'https://overpass-api.de/api/interpreter';
-    
+
     // State
     let collectedPlaces = new Map();
     let isLoading = false;
@@ -381,7 +381,8 @@
     const playerIdBadge = document.getElementById('playerIdBadge');
     const playerNameInput = document.getElementById('playerNameInput');
 
-    playerIdBadge.innerHTML = `🐊 ${STORAGE_KEY.slice(-8)} 🐊`;  // Just the ID, more compact
+    // Show Gator ID with last 5 digits
+    playerIdBadge.innerHTML = `🐊 Gator ID: ${STORAGE_KEY.slice(-5)} 🐊`;
 
     // ---------- LOAD / SAVE name ----------
     function loadPlayerName() {
@@ -434,12 +435,12 @@
     // ---------- Format type nicely ----------
     function formatBusinessType(tags) {
         if (!tags) return 'Place';
-        
+
         const typePriority = [
             'amenity', 'shop', 'tourism', 'leisure', 
             'craft', 'office', 'historic', 'building'
         ];
-        
+
         for (let key of typePriority) {
             if (tags[key]) {
                 return tags[key]
@@ -448,18 +449,18 @@
                     .join(' ');
             }
         }
-        
+
         if (tags['artwork_type']) return 'Artwork';
         if (tags['memorial']) return 'Memorial';
         if (tags['man_made']) return tags.man_made;
-        
+
         return 'Place';
     }
 
     // ---------- Get category/icon ----------
     function getBusinessCategory(tags) {
         if (!tags) return '📍';
-        
+
         if (tags.amenity === 'bar' || tags.amenity === 'pub') return '🍺';
         if (tags.amenity === 'restaurant') return '🍽️';
         if (tags.amenity === 'cafe') return '☕';
@@ -469,7 +470,7 @@
         if (tags.historic) return '🏰';
         if (tags.leisure) return '🎯';
         if (tags.artwork_type) return '🎨';
-        
+
         return '📍';
     }
 
@@ -484,10 +485,10 @@
         } else {
             const sorted = Array.from(collectedPlaces.values())
                 .sort((a, b) => a.name.localeCompare(b.name));
-            
+
             sorted.forEach((place, index) => {
                 const category = getBusinessCategory(place.tags);
-                
+
                 html += `
                     <div class="collected-item">
                         <span>${index + 1}</span>
@@ -505,7 +506,7 @@
     // ---------- Fetch nearby businesses ----------
     async function fetchNearbyBusinesses(lat, lng) {
         const radius = Math.round(FEET_100_IN_METERS);
-        
+
         const query = `
             [out:json];
             (
@@ -531,21 +532,21 @@
                 },
                 body: `data=${encodeURIComponent(query)}`
             });
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const data = await response.json();
             return data;
         } catch (error) {
             console.log('Fetch failed, trying JSONP fallback...', error);
-            
+
             return new Promise((resolve, reject) => {
                 const callbackName = 'overpass_cb_' + Date.now();
                 const simpleQuery = `[out:json];(node["amenity"](around:${radius},${lat},${lng});node["shop"](around:${radius},${lat},${lng}););out;`;
                 const url = `${OVERPASS_API}?data=${encodeURIComponent(simpleQuery)}&jsonp=${callbackName}`;
-                
+
                 const script = document.createElement('script');
                 const timeout = setTimeout(() => {
                     delete window[callbackName];
@@ -603,31 +604,31 @@
 
         for (let el of elements) {
             if (el.type !== 'node' || !el.lat || !el.lon) continue;
-            
+
             const nodeId = String(el.id);
             if (collectedPlaces.has(nodeId)) continue;
 
             const distanceMeters = calculateDistance(userLat, userLng, el.lat, el.lon);
             const distanceFeet = metersToFeet(distanceMeters);
-            
+
             if (distanceMeters > FEET_100_IN_METERS + 5) continue;
 
             const tags = el.tags || {};
-            
+
             let name = tags.name || 
                       tags['name:en'] || 
                       tags.brand || 
                       tags.operator ||
                       tags.description ||
                       '';
-            
+
             if (!name) {
                 const type = formatBusinessType(tags);
                 name = `${type} at ${distanceFeet}ft`;
             }
-            
+
             name = name.charAt(0).toUpperCase() + name.slice(1);
-            
+
             const business = {
                 id: nodeId,
                 name: name,
@@ -728,7 +729,7 @@
     function showPermissionHelp(permissionDenied = false) {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         const isAndroid = /Android/.test(navigator.userAgent);
-        
+
         let message = '';
         if (isIOS && permissionDenied) {
             message = '🍎 iOS: Settings > Privacy > Location Services > Safari > While Using';
@@ -737,10 +738,10 @@
         } else {
             message = '📍 Please allow location access when prompted';
         }
-        
+
         permissionDiv.innerHTML = message;
         permissionDiv.style.display = 'block';
-        
+
         setTimeout(() => {
             permissionDiv.style.display = 'none';
         }, 8000);
@@ -749,7 +750,7 @@
     // ---------- Event listeners ----------
     collectBtn.addEventListener('click', handleCollect);
     resetBtn.addEventListener('click', resetProgress);
-    
+
     let nameTimeout;
     playerNameInput.addEventListener('input', (e) => {
         clearTimeout(nameTimeout);
