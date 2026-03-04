@@ -68,7 +68,7 @@
             white-space: nowrap;
         }
 
-        /* New name badge - smaller like Gator ID, with purple diamond */
+        /* Name badge - centered text in purple */
         .name-badge {
             background: #4a2d6a;  /* Purple background */
             color: white;
@@ -77,7 +77,7 @@
             font-size: 0.9rem;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            justify-content: center;
             border: 1px solid #d896ff;
             white-space: nowrap;
             max-width: 200px;
@@ -91,13 +91,12 @@
             padding: 0;
             outline: none;
             font-family: inherit;
+            text-align: center;
         }
         .name-badge input::placeholder {
             color: #d896ff;
             opacity: 0.7;
-        }
-        .purple-diamond {
-            font-size: 1rem;
+            text-align: center;
         }
 
         .score-panel {
@@ -303,9 +302,8 @@
     <div class="badge-row">
         <div class="player-id-badge" id="playerIdBadge">🐊 Gator ID: </div>
 
-        <!-- New compact name badge with purple diamond -->
+        <!-- Name badge - clean purple, centered text, no shrimp -->
         <div class="name-badge">
-            <span class="purple-diamond">  🦐</span>
             <input type="text" id="playerNameInput" placeholder="Gator Hunter" maxlength="15">
         </div>
     </div>
