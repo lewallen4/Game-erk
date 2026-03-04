@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>NOLA Gator Hunt · 75ft collection</title>
+    <title>NOLA Gator Hunt · 100ft collection</title>
     <style>
         * {
             box-sizing: border-box;
@@ -12,7 +12,7 @@
         }
         body {
             font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
-            background: #0b4d2e;  /* Swamp green */
+            background: #0b4d2e;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -22,7 +22,7 @@
             background-image: radial-gradient(circle at 10% 30%, #2d6a4f 0%, #0b4d2e 100%);
         }
         .game-container {
-            background: #f0f4d8;  /* Light gator belly */
+            background: #f0f4d8;
             width: 100%;
             max-width: 420px;
             border-radius: 48px 48px 32px 32px;
@@ -35,7 +35,7 @@
             font-size: 2.2rem;
             font-weight: 800;
             letter-spacing: -0.5px;
-            color: #1d5e3f;  /* Dark green */
+            color: #1d5e3f;
             text-shadow: 3px 3px 0 #e0b060;
             margin-top: -8px;
             margin-bottom: 10px;
@@ -48,7 +48,7 @@
             font-style: italic;
         }
         .score-panel {
-            background: #1a4d2e;  /* Forest green */
+            background: #1a4d2e;
             border-radius: 120px;
             padding: 20px 15px;
             margin: 12px 0 18px;
@@ -75,14 +75,14 @@
             color: #ffc857;
             border: 1px solid #b8863d;
         }
-        .btn-primary, .btn-secondary {
+        .btn-primary {
             width: 100%;
             padding: 18px 12px;
             font-size: 1.8rem;
             font-weight: bold;
             border: none;
             border-radius: 60px;
-            background: #4c9e5a;  /* Gator green */
+            background: #4c9e5a;
             color: #1a2e44;
             box-shadow: 0 8px 0 #2d6a4f, 0 10px 16px rgba(0,0,0,0.3);
             transition: all 0.06s ease-out;
@@ -91,42 +91,41 @@
             touch-action: manipulation;
             border: 2px solid #a5d6a5;
         }
-        .btn-primary:active, .btn-secondary:active {
+        .btn-primary:active {
             transform: translateY(6px);
             box-shadow: 0 2px 0 #1d5e3f, 0 5px 12px rgba(0,0,0,0.3);
         }
-        .btn-primary:disabled, .btn-secondary:disabled {
+        .btn-primary:disabled {
             opacity: 0.5;
             transform: translateY(4px);
             box-shadow: 0 4px 0 #2d6a4f;
             pointer-events: none;
         }
-        .btn-secondary {
+        .reset-btn {
             background: #5a9e7a;
             box-shadow: 0 6px 0 #2d6a4f, 0 8px 14px rgba(0,0,0,0.3);
             font-size: 1.3rem;
             padding: 14px 12px;
             color: white;
-            border-color: #a5d6a5;
+            border: 2px solid #a5d6a5;
+            width: 100%;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            touch-action: manipulation;
+            margin-top: 10px;
         }
-        .reset-row {
-            display: flex;
-            gap: 12px;
-            margin: 22px 0 12px;
-        }
-        .reset-row .btn-secondary {
-            width: auto;
-            flex: 1;
-            font-size: 1.2rem;
-            padding: 12px 6px;
+        .reset-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #2d6a4f;
         }
         .business-list {
-            background: #d4e2b0;  /* Light swamp green */
+            background: #d4e2b0;
             border-radius: 40px 40px 24px 24px;
             padding: 18px 12px 12px;
             border: 2px dashed #5b8c5a;
             margin: 20px 0 8px;
-            max-height: 240px;
+            max-height: 300px;
             overflow-y: auto;
         }
         .list-title {
@@ -143,12 +142,12 @@
         .collected-item {
             background: #f0f8e8;
             border-radius: 50px;
-            padding: 10px 18px;
-            margin: 6px 0;
-            font-size: 1.1rem;
+            padding: 12px 18px;
+            margin: 8px 0;
+            font-size: 1rem;
             text-align: left;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             border-left: 8px solid #4c9e5a;
@@ -159,28 +158,54 @@
             background: #1a4d2e;
             color: white;
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.9rem;
             flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .business-details {
+            flex: 1;
+        }
+        .business-name {
+            font-weight: bold;
+            color: #1d5e3f;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+        .business-meta {
+            font-size: 0.8rem;
+            color: #5a715e;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .business-type {
+            background: #c0d8b0;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+        .business-distance {
+            color: #b76e2e;
         }
         .empty-message {
             color: #2d5a2d;
-            padding: 16px;
+            padding: 20px;
             font-style: italic;
             background: #c0d8b0;
             border-radius: 60px;
+            font-size: 1.1rem;
         }
         .status-message {
             background: #1a4d2e;
             color: #e0eaa0;
-            padding: 10px;
+            padding: 12px;
             border-radius: 40px;
-            font-size: 0.95rem;
+            font-size: 1rem;
             margin: 14px 0 6px;
             border: 1px solid #8b9e6c;
             word-break: break-word;
@@ -189,14 +214,17 @@
             font-size: 0.8rem;
             color: #2d5a2d;
             margin-top: 16px;
+            background: #c0d8b0;
+            padding: 8px;
+            border-radius: 30px;
         }
         .small-note {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: #2d5a2d;
             background: #c0d8b0;
             border-radius: 30px;
-            padding: 6px;
-            margin-bottom: 8px;
+            padding: 8px;
+            margin: 10px 0;
         }
         .permission-hint {
             background: #FFF3CD;
@@ -226,6 +254,11 @@
             margin-bottom: 8px;
             border: 1px solid #ffd966;
         }
+        .scan-stats {
+            font-size: 0.9rem;
+            color: #e0eaa0;
+            margin-top: 4px;
+        }
         .gator-icon {
             font-size: 2rem;
             display: inline-block;
@@ -236,42 +269,45 @@
 <body>
 <div class="game-container">
     <div class="gator-icon">🐊🐊🐊</div>
-    <h1>⚜️ NOLA GATOR ⚜️</h1>
-    <div class="fleur">🐊 hunt every bar & shop 🐊</div>
+    <h1>⚜️ NOLA 100 ⚜️</h1>
+    <div class="fleur">🐊 100 FEET OF GATOR 🐊</div>
 
-    <div class="player-id-badge" id="playerIdBadge">📱 Your swamp</div>
+    <div class="player-id-badge" id="playerIdBadge">🐊 Your swamp 🐊</div>
 
     <div class="score-panel">
         <span class="score-number" id="scoreDisplay">0</span>
         <span class="score-label">gator bites</span>
     </div>
 
-    <button class="btn-primary" id="collectBtn">🐊 COLLECT NEARBY 🐊</button>
-    <div class="status-message" id="statusMsg">Tap to find gator snacks within 75ft</div>
+    <button class="btn-primary" id="collectBtn">🐊 CHOMP NEARBY (100ft) 🐊</button>
+    <div class="status-message" id="statusMsg">Tap to find gator snacks within 100 feet</div>
     
     <div id="localWarning" class="warning-box" style="display: none;"></div>
     <div id="permissionHelp" class="permission-hint" style="display: none;"></div>
     
-    <div class="small-note">⚡ live from OpenStreetMap · bars, cafes, shops, galleries</div>
+    <div class="small-note">
+        ⚡ Snaps every bar, shop, cafe, gallery within 100ft<br>
+        📍 Data stays on YOUR phone forever
+    </div>
 
     <div class="business-list" id="businessListContainer">
         <div class="list-title">🐊 your gator haul 🐊</div>
         <div id="collectedNames"></div>
     </div>
 
-    <div class="reset-row">
-        <button class="btn-secondary" id="resetBtn">🗑️ RESET SWAMP</button>
-        <button class="btn-secondary" id="demoBtn">🎲 demo (french quarter)</button>
+    <button class="reset-btn" id="resetBtn">🗑️ RESET YOUR SWAMP</button>
+    
+    <div class="footer-note">
+        🐊 Each player has their own collection · updates won't erase data 🐊
     </div>
-    <div class="footer-note">🐊 data stays on YOUR phone · separate for each gator 🐊</div>
 </div>
 
 <script>
 (function() {
     // ---------- CONSTANTS ----------
-    const FEET_75_IN_METERS = 22.86;
+    const FEET_100_IN_METERS = 30.48;  // Exactly 100 feet
     
-    // Each user gets their OWN storage key
+    // Create unique storage key per device
     function getStorageKey() {
         const screenInfo = `${screen.width}x${screen.height}x${screen.colorDepth}`;
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -287,23 +323,20 @@
             hash = hash & hash;
         }
         
-        return `gator_bites_${Math.abs(hash)}`;
+        return `gator_100ft_${Math.abs(hash)}`;
     }
 
     const STORAGE_KEY = getStorageKey();
-
-    // Use a more reliable API endpoint - Overpass via fetch with JSONP fallback
     const OVERPASS_API = 'https://overpass-api.de/api/interpreter';
     
-    // Local cache to avoid duplicates
-    let collectedPlaces = new Map();
+    // State
+    let collectedPlaces = new Map();  // Stores full details now
     let isLoading = false;
 
     // DOM elements
     const scoreSpan = document.getElementById('scoreDisplay');
     const collectBtn = document.getElementById('collectBtn');
     const resetBtn = document.getElementById('resetBtn');
-    const demoBtn = document.getElementById('demoBtn');
     const statusDiv = document.getElementById('statusMsg');
     const collectedDiv = document.getElementById('collectedNames');
     const permissionDiv = document.getElementById('permissionHelp');
@@ -312,7 +345,7 @@
 
     playerIdBadge.innerHTML = `🐊 Gator ID: ${STORAGE_KEY.slice(-8)} 🐊`;
 
-    // ---------- LOAD / SAVE ----------
+    // ---------- LOAD / SAVE (detailed data) ----------
     function loadCollected() {
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
@@ -322,10 +355,7 @@
                     collectedPlaces.clear();
                     arr.forEach(item => {
                         if (item && item.id) {
-                            collectedPlaces.set(String(item.id), {
-                                id: String(item.id),
-                                name: item.name || 'unknown swamp snack'
-                            });
+                            collectedPlaces.set(String(item.id), item);
                         }
                     });
                 }
@@ -340,9 +370,11 @@
         try {
             const arr = Array.from(collectedPlaces.values());
             localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+            console.log(`Saved ${arr.length} gator bites to ${STORAGE_KEY}`);
         } catch (e) {}
     }
 
+    // ---------- UI with detailed entries ----------
     function updateUI() {
         const count = collectedPlaces.size;
         scoreSpan.innerText = count;
@@ -351,19 +383,39 @@
         if (count === 0) {
             html = '<div class="empty-message">🐊 no gator snacks yet — start walking 🐊</div>';
         } else {
-            let i = 1;
-            for (let place of collectedPlaces.values()) {
-                html += `<div class="collected-item"><span>${i++}</span> ${place.name}</div>`;
-            }
+            // Convert to array and sort by name for consistency
+            const sorted = Array.from(collectedPlaces.values())
+                .sort((a, b) => a.name.localeCompare(b.name));
+            
+            sorted.forEach((place, index) => {
+                const type = place.type || 'unknown';
+                const address = place.address || 'French Quarter';
+                
+                html += `
+                    <div class="collected-item">
+                        <span>${index + 1}</span>
+                        <div class="business-details">
+                            <div class="business-name">${place.name}</div>
+                            <div class="business-meta">
+                                <span class="business-type">${type}</span>
+                                <span class="business-distance">${place.distance || '100ft'}</span>
+                            </div>
+                            <div style="font-size:0.75rem; color:#8b9e6c; margin-top:4px;">
+                                ${place.id.slice(-6)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
         }
         collectedDiv.innerHTML = html;
     }
 
-    // ---------- FIXED: Using fetch instead of JSONP ----------
+    // ---------- Fetch nearby businesses (100ft) ----------
     async function fetchNearbyBusinesses(lat, lng) {
-        const radius = Math.round(FEET_75_IN_METERS);
+        const radius = Math.round(FEET_100_IN_METERS);
         
-        // Overpass QL query - get all amenities and shops within radius
+        // Expanded query to catch everything interesting
         const query = `
             [out:json];
             (
@@ -373,12 +425,13 @@
                 node["leisure"](around:${radius},${lat},${lng});
                 node["craft"](around:${radius},${lat},${lng});
                 node["office"](around:${radius},${lat},${lng});
+                node["historic"](around:${radius},${lat},${lng});
+                node["building"](around:${radius},${lat},${lng});
             );
             out body;
         `;
 
         try {
-            // Try fetch first (CORS-friendly)
             const response = await fetch(OVERPASS_API, {
                 method: 'POST',
                 headers: {
@@ -396,7 +449,7 @@
         } catch (error) {
             console.log('Fetch failed, trying JSONP fallback...', error);
             
-            // Fallback to JSONP with a simpler query
+            // Fallback to JSONP
             return new Promise((resolve, reject) => {
                 const callbackName = 'overpass_cb_' + Date.now();
                 const simpleQuery = `[out:json];(node["amenity"](around:${radius},${lat},${lng});node["shop"](around:${radius},${lat},${lng}););out;`;
@@ -429,8 +482,27 @@
         }
     }
 
-    // ---------- Process the results ----------
-    function processBusinesses(data) {
+    // ---------- Calculate distance between two points ----------
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371000;
+        const φ1 = lat1 * Math.PI/180;
+        const φ2 = lat2 * Math.PI/180;
+        const Δφ = (lat2 - lat1) * Math.PI/180;
+        const Δλ = (lon2 - lon1) * Math.PI/180;
+
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    function metersToFeet(meters) {
+        return Math.round(meters * 3.28084);
+    }
+
+    // ---------- Process with detailed info ----------
+    function processBusinesses(data, userLat, userLng) {
         if (!data || !data.elements) {
             return { newCount: 0, totalFound: 0 };
         }
@@ -439,37 +511,55 @@
         const elements = data.elements;
 
         for (let el of elements) {
-            if (el.type !== 'node') continue;
+            if (el.type !== 'node' || !el.lat || !el.lon) continue;
             
             const nodeId = String(el.id);
             if (collectedPlaces.has(nodeId)) continue;
 
-            // Get the best name available
-            let name = '';
-            if (el.tags) {
-                name = el.tags.name || 
-                       el.tags['name:en'] || 
-                       el.tags.brand || 
-                       el.tags.amenity || 
-                       el.tags.shop ||
-                       el.tags.tourism ||
-                       el.tags.leisure ||
-                       el.tags.craft ||
-                       'place';
-                
-                // Add type for context
-                const type = el.tags.amenity || el.tags.shop || el.tags.tourism || el.tags.leisure;
-                if (type && !name.includes(type)) {
-                    name = `${name} (${type})`;
-                }
-            } else {
-                name = 'unknown spot';
-            }
+            // Calculate exact distance
+            const distanceMeters = calculateDistance(userLat, userLng, el.lat, el.lon);
+            const distanceFeet = metersToFeet(distanceMeters);
+            
+            // Only include if within 100ft (extra safety)
+            if (distanceMeters > FEET_100_IN_METERS + 5) continue;
 
-            collectedPlaces.set(nodeId, { 
-                id: nodeId, 
-                name: name
-            });
+            // Get all the details
+            const tags = el.tags || {};
+            
+            // Determine primary type
+            let type = tags.amenity || tags.shop || tags.tourism || tags.leisure || tags.craft || tags.historic || 'place';
+            
+            // Get the best name
+            let name = tags.name || 
+                      tags['name:en'] || 
+                      tags.brand || 
+                      tags.operator ||
+                      `${type} at ${distanceFeet}ft`;
+            
+            // Clean up name
+            name = name.charAt(0).toUpperCase() + name.slice(1);
+            
+            // Build address if available
+            let address = [];
+            if (tags['addr:housenumber'] && tags['addr:street']) {
+                address.push(`${tags['addr:housenumber']} ${tags['addr:street']}`);
+            }
+            if (tags['addr:city']) address.push(tags['addr:city']);
+            
+            // Create detailed entry
+            const business = {
+                id: nodeId,
+                name: name,
+                type: type.charAt(0).toUpperCase() + type.slice(1),
+                distance: `${distanceFeet}ft`,
+                address: address.join(', ') || 'French Quarter',
+                lat: el.lat,
+                lon: el.lon,
+                tags: tags,
+                collectedAt: new Date().toISOString()
+            };
+
+            collectedPlaces.set(nodeId, business);
             newlyAdded++;
         }
 
@@ -481,7 +571,7 @@
         return { newCount: newlyAdded, totalFound: elements.length };
     }
 
-    // ---------- Main scan function ----------
+    // ---------- Main scan ----------
     async function handleCollect() {
         if (isLoading) return;
 
@@ -498,16 +588,16 @@
             async (position) => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
-                statusDiv.innerText = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)} · sniffing for gator snacks...`;
+                statusDiv.innerText = `📍 Scanning 100ft around your position...`;
 
                 try {
                     const data = await fetchNearbyBusinesses(lat, lng);
-                    const { newCount, totalFound } = processBusinesses(data);
+                    const { newCount, totalFound } = processBusinesses(data, lat, lng);
 
                     if (newCount > 0) {
-                        statusDiv.innerText = `🐊 +${newCount} new gator bites! (found ${totalFound} spots) 🐊`;
+                        statusDiv.innerText = `🐊 +${newCount} new gator bites within 100ft! (found ${totalFound} total) 🐊`;
                     } else {
-                        statusDiv.innerText = `👣 no new snacks within 75ft. (${totalFound} already in your swamp?)`;
+                        statusDiv.innerText = `👣 No new snacks in 100ft. (${totalFound} spots nearby, already in your swamp?)`;
                     }
                 } catch (error) {
                     console.error('Scan error:', error);
@@ -541,45 +631,14 @@
         );
     }
 
-    // ---------- Demo with fixed coordinates ----------
-    async function demoScan() {
-        if (isLoading) return;
-
-        isLoading = true;
-        collectBtn.disabled = true;
-        demoBtn.disabled = true;
-        statusDiv.innerText = "🎲 demo: scanning near Jackson Square...";
-
-        const demoLat = 29.9576;
-        const demoLng = -90.0635;
-
-        try {
-            const data = await fetchNearbyBusinesses(demoLat, demoLng);
-            const { newCount, totalFound } = processBusinesses(data);
-
-            if (newCount > 0) {
-                statusDiv.innerText = `🐊 demo: +${newCount} new gator bites! (found ${totalFound}) 🐊`;
-            } else {
-                statusDiv.innerText = `📦 demo: no new (${totalFound} already in your swamp?)`;
-            }
-        } catch (error) {
-            console.error('Demo error:', error);
-            statusDiv.innerText = "❌ demo error — try again";
-        } finally {
-            isLoading = false;
-            collectBtn.disabled = false;
-            demoBtn.disabled = false;
-        }
-    }
-
     // ---------- Reset ----------
     function resetProgress() {
         if (isLoading) return;
-        if (confirm('🐊 Reset your swamp? All gator bites will be lost!')) {
+        if (confirm('🐊 Reset your swamp? All gator bites will be lost forever!')) {
             collectedPlaces.clear();
             saveCollected();
             updateUI();
-            statusDiv.innerText = "swamp reset — start fresh!";
+            statusDiv.innerText = "Swamp reset — start fresh!";
         }
     }
 
@@ -608,14 +667,13 @@
     // ---------- Event listeners ----------
     collectBtn.addEventListener('click', handleCollect);
     resetBtn.addEventListener('click', resetProgress);
-    demoBtn.addEventListener('click', demoScan);
 
     // Initial load
     loadCollected();
 
-    // Check if we're on HTTPS
-    if (window.location.protocol !== 'https:' && window.location.protocol !== 'http:') {
-        localWarningDiv.innerHTML = '⚠️ Open this via GitHub Pages URL for best results';
+    // Show warning if local file
+    if (window.location.protocol === 'file:') {
+        localWarningDiv.innerHTML = '⚠️ Open via GitHub Pages URL for location access';
         localWarningDiv.style.display = 'block';
     }
 })();
