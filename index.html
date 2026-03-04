@@ -47,6 +47,54 @@
             margin-bottom: 12px;
             font-style: italic;
         }
+        .player-id-badge {
+            background: #2d6a4f;
+            color: white;
+            border-radius: 40px;
+            padding: 6px 15px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 8px;
+            border: 1px solid #ffd966;
+        }
+        
+        /* New name input styling */
+        .name-container {
+            background: #2d6a4f;
+            border-radius: 40px;
+            padding: 12px 15px;
+            margin: 10px 0 15px 0;
+            border: 2px solid #ffd966;
+        }
+        .name-label {
+            color: #ffd966;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        .name-input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 30px;
+            background: #f0f4d8;
+            color: #1d5e3f;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #ffd966;
+            outline: none;
+        }
+        .name-input:focus {
+            border: 2px solid #b76e2e;
+            background: #ffffff;
+        }
+        .name-input::placeholder {
+            color: #8b9e6c;
+            font-size: 1rem;
+        }
+        
         .score-panel {
             background: #1a4d2e;
             border-radius: 120px;
@@ -233,16 +281,6 @@
             border: 2px solid #f5c6cb;
             font-weight: bold;
         }
-        .player-id-badge {
-            background: #2d6a4f;
-            color: white;
-            border-radius: 40px;
-            padding: 6px 15px;
-            font-size: 0.9rem;
-            display: inline-block;
-            margin-bottom: 8px;
-            border: 1px solid #ffd966;
-        }
         .gator-icon {
             font-size: 2rem;
             display: inline-block;
@@ -257,6 +295,12 @@
     <div class="fleur">🐊 100 FEET OF GATOR 🐊</div>
 
     <div class="player-id-badge" id="playerIdBadge">🐊 Your swamp 🐊</div>
+    
+    <!-- New name input section - right where you wanted it -->
+    <div class="name-container">
+        <div class="name-label">📝 ENTER YOUR NAME</div>
+        <input type="text" id="playerNameInput" class="name-input" placeholder="Gator Hunter" maxlength="20">
+    </div>
 
     <div class="score-panel">
         <span class="score-number" id="scoreDisplay">0</span>
@@ -310,11 +354,13 @@
     }
 
     const STORAGE_KEY = getStorageKey();
+    const NAME_STORAGE_KEY = `${STORAGE_KEY}_name`; // Separate key for name
     const OVERPASS_API = 'https://overpass-api.de/api/interpreter';
     
     // State
     let collectedPlaces = new Map();
     let isLoading = false;
+    let playerName = '';
 
     // DOM elements
     const scoreSpan = document.getElementById('scoreDisplay');
@@ -325,10 +371,31 @@
     const permissionDiv = document.getElementById('permissionHelp');
     const localWarningDiv = document.getElementById('localWarning');
     const playerIdBadge = document.getElementById('playerIdBadge');
+    const playerNameInput = document.getElementById('playerNameInput');
 
     playerIdBadge.innerHTML = `🐊 Gator ID: ${STORAGE_KEY.slice(-8)} 🐊`;
 
-    // ---------- LOAD / SAVE ----------
+    // ---------- LOAD / SAVE name ----------
+    function loadPlayerName() {
+        try {
+            const savedName = localStorage.getItem(NAME_STORAGE_KEY);
+            if (savedName) {
+                playerName = savedName;
+                playerNameInput.value = savedName;
+            }
+        } catch (e) {
+            console.warn('failed to load name', e);
+        }
+    }
+
+    function savePlayerName(name) {
+        try {
+            localStorage.setItem(NAME_STORAGE_KEY, name);
+            playerName = name;
+        } catch (e) {}
+    }
+
+    // ---------- LOAD / SAVE collected places ----------
     function loadCollected() {
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
@@ -651,8 +718,12 @@
     // ---------- Reset ----------
     function resetProgress() {
         if (isLoading) return;
-        if (confirm('🐊 Reset your swamp? All gator bites will be lost forever!')) {
+        if (confirm('🐊 Reset your swamp? All gator bites and your name will be lost forever!')) {
             collectedPlaces.clear();
+            // Clear name too
+            playerName = '';
+            playerNameInput.value = '';
+            savePlayerName('');
             saveCollected();
             updateUI();
             statusDiv.innerText = "Swamp reset — start fresh!";
@@ -684,9 +755,19 @@
     // ---------- Event listeners ----------
     collectBtn.addEventListener('click', handleCollect);
     resetBtn.addEventListener('click', resetProgress);
+    
+    // Save name when user types (with debounce to avoid too many saves)
+    let nameTimeout;
+    playerNameInput.addEventListener('input', (e) => {
+        clearTimeout(nameTimeout);
+        nameTimeout = setTimeout(() => {
+            savePlayerName(e.target.value);
+        }, 500); // Save 500ms after user stops typing
+    });
 
     // Initial load
     loadCollected();
+    loadPlayerName();
 
     // Show warning if local file
     if (window.location.protocol === 'file:') {
