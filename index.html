@@ -125,7 +125,7 @@
             padding: 18px 12px 12px;
             border: 2px dashed #5b8c5a;
             margin: 20px 0 8px;
-            max-height: 300px;
+            max-height: 350px;
             overflow-y: auto;
         }
         .list-title {
@@ -178,19 +178,32 @@
             margin-bottom: 4px;
         }
         .business-meta {
-            font-size: 0.8rem;
-            color: #5a715e;
+            font-size: 0.85rem;
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
+            align-items: center;
         }
         .business-type {
             background: #c0d8b0;
-            padding: 2px 10px;
+            padding: 3px 12px;
             border-radius: 20px;
+            color: #1d5e3f;
+            font-weight: 500;
         }
         .business-distance {
             color: #b76e2e;
+            background: #f5e6d3;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .business-category {
+            background: #a8c99e;
+            padding: 3px 12px;
+            border-radius: 20px;
+            color: #1d5e3f;
+            font-size: 0.8rem;
         }
         .empty-message {
             color: #2d5a2d;
@@ -253,11 +266,6 @@
             display: inline-block;
             margin-bottom: 8px;
             border: 1px solid #ffd966;
-        }
-        .scan-stats {
-            font-size: 0.9rem;
-            color: #e0eaa0;
-            margin-top: 4px;
         }
         .gator-icon {
             font-size: 2rem;
@@ -330,7 +338,7 @@
     const OVERPASS_API = 'https://overpass-api.de/api/interpreter';
     
     // State
-    let collectedPlaces = new Map();  // Stores full details now
+    let collectedPlaces = new Map();
     let isLoading = false;
 
     // DOM elements
@@ -345,7 +353,7 @@
 
     playerIdBadge.innerHTML = `🐊 Gator ID: ${STORAGE_KEY.slice(-8)} 🐊`;
 
-    // ---------- LOAD / SAVE (detailed data) ----------
+    // ---------- LOAD / SAVE ----------
     function loadCollected() {
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
@@ -370,11 +378,56 @@
         try {
             const arr = Array.from(collectedPlaces.values());
             localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-            console.log(`Saved ${arr.length} gator bites to ${STORAGE_KEY}`);
         } catch (e) {}
     }
 
-    // ---------- UI with detailed entries ----------
+    // ---------- Format type nicely ----------
+    function formatBusinessType(tags) {
+        if (!tags) return 'Place';
+        
+        // Priority order for type display
+        const typePriority = [
+            'amenity', 'shop', 'tourism', 'leisure', 
+            'craft', 'office', 'historic', 'building'
+        ];
+        
+        for (let key of typePriority) {
+            if (tags[key]) {
+                // Convert underscores to spaces and capitalize
+                return tags[key]
+                    .split('_')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+            }
+        }
+        
+        // Check for other common tags
+        if (tags['artwork_type']) return 'Artwork';
+        if (tags['memorial']) return 'Memorial';
+        if (tags['man_made']) return tags.man_made;
+        
+        return 'Place';
+    }
+
+    // ---------- Get category/icon ----------
+    function getBusinessCategory(tags) {
+        if (!tags) return '📍';
+        
+        // Return emoji based on type
+        if (tags.amenity === 'bar' || tags.amenity === 'pub') return '🍺';
+        if (tags.amenity === 'restaurant') return '🍽️';
+        if (tags.amenity === 'cafe') return '☕';
+        if (tags.shop) return '🛍️';
+        if (tags.tourism === 'attraction') return '🎭';
+        if (tags.tourism === 'museum') return '🏛️';
+        if (tags.historic) return '🏰';
+        if (tags.leisure) return '🎯';
+        if (tags.artwork_type) return '🎨';
+        
+        return '📍';
+    }
+
+    // ---------- UI with fixed formatting ----------
     function updateUI() {
         const count = collectedPlaces.size;
         scoreSpan.innerText = count;
@@ -383,25 +436,23 @@
         if (count === 0) {
             html = '<div class="empty-message">🐊 no gator snacks yet — start walking 🐊</div>';
         } else {
-            // Convert to array and sort by name for consistency
+            // Sort by name
             const sorted = Array.from(collectedPlaces.values())
                 .sort((a, b) => a.name.localeCompare(b.name));
             
             sorted.forEach((place, index) => {
-                const type = place.type || 'unknown';
-                const address = place.address || 'French Quarter';
+                // Get category emoji
+                const category = getBusinessCategory(place.tags);
                 
                 html += `
                     <div class="collected-item">
                         <span>${index + 1}</span>
                         <div class="business-details">
-                            <div class="business-name">${place.name}</div>
+                            <div class="business-name">${category} ${place.name}</div>
                             <div class="business-meta">
-                                <span class="business-type">${type}</span>
-                                <span class="business-distance">${place.distance || '100ft'}</span>
-                            </div>
-                            <div style="font-size:0.75rem; color:#8b9e6c; margin-top:4px;">
-                                ${place.id.slice(-6)}
+                                <span class="business-type">${place.displayType}</span>
+                                <span class="business-distance">${place.distance}</span>
+                                ${place.category ? `<span class="business-category">${place.category}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -411,11 +462,11 @@
         collectedDiv.innerHTML = html;
     }
 
-    // ---------- Fetch nearby businesses (100ft) ----------
+    // ---------- Fetch nearby businesses ----------
     async function fetchNearbyBusinesses(lat, lng) {
         const radius = Math.round(FEET_100_IN_METERS);
         
-        // Expanded query to catch everything interesting
+        // Expanded query to catch everything
         const query = `
             [out:json];
             (
@@ -427,6 +478,8 @@
                 node["office"](around:${radius},${lat},${lng});
                 node["historic"](around:${radius},${lat},${lng});
                 node["building"](around:${radius},${lat},${lng});
+                node["artwork_type"](around:${radius},${lat},${lng});
+                node["memorial"](around:${radius},${lat},${lng});
             );
             out body;
         `;
@@ -449,7 +502,6 @@
         } catch (error) {
             console.log('Fetch failed, trying JSONP fallback...', error);
             
-            // Fallback to JSONP
             return new Promise((resolve, reject) => {
                 const callbackName = 'overpass_cb_' + Date.now();
                 const simpleQuery = `[out:json];(node["amenity"](around:${radius},${lat},${lng});node["shop"](around:${radius},${lat},${lng}););out;`;
@@ -482,7 +534,7 @@
         }
     }
 
-    // ---------- Calculate distance between two points ----------
+    // ---------- Calculate distance ----------
     function calculateDistance(lat1, lon1, lat2, lon2) {
         const R = 6371000;
         const φ1 = lat1 * Math.PI/180;
@@ -501,7 +553,7 @@
         return Math.round(meters * 3.28084);
     }
 
-    // ---------- Process with detailed info ----------
+    // ---------- Process with better formatting ----------
     function processBusinesses(data, userLat, userLng) {
         if (!data || !data.elements) {
             return { newCount: 0, totalFound: 0 };
@@ -520,39 +572,41 @@
             const distanceMeters = calculateDistance(userLat, userLng, el.lat, el.lon);
             const distanceFeet = metersToFeet(distanceMeters);
             
-            // Only include if within 100ft (extra safety)
+            // Only include if within 100ft
             if (distanceMeters > FEET_100_IN_METERS + 5) continue;
 
-            // Get all the details
             const tags = el.tags || {};
-            
-            // Determine primary type
-            let type = tags.amenity || tags.shop || tags.tourism || tags.leisure || tags.craft || tags.historic || 'place';
             
             // Get the best name
             let name = tags.name || 
                       tags['name:en'] || 
                       tags.brand || 
                       tags.operator ||
-                      `${type} at ${distanceFeet}ft`;
+                      tags.description ||
+                      '';
+            
+            // If no name, create one from type
+            if (!name) {
+                const type = formatBusinessType(tags);
+                name = `${type} at ${distanceFeet}ft`;
+            }
             
             // Clean up name
             name = name.charAt(0).toUpperCase() + name.slice(1);
             
-            // Build address if available
-            let address = [];
-            if (tags['addr:housenumber'] && tags['addr:street']) {
-                address.push(`${tags['addr:housenumber']} ${tags['addr:street']}`);
-            }
-            if (tags['addr:city']) address.push(tags['addr:city']);
+            // Get display type (fixed formatting)
+            const displayType = formatBusinessType(tags);
             
-            // Create detailed entry
+            // Get category/icon
+            const category = getBusinessCategory(tags);
+            
+            // Create detailed entry with fixed formatting
             const business = {
                 id: nodeId,
                 name: name,
-                type: type.charAt(0).toUpperCase() + type.slice(1),
+                displayType: displayType,  // Fixed: always a string
+                category: category,
                 distance: `${distanceFeet}ft`,
-                address: address.join(', ') || 'French Quarter',
                 lat: el.lat,
                 lon: el.lon,
                 tags: tags,
