@@ -162,16 +162,6 @@
             border-radius: 20px;
             display: inline-block;
         }
-        .location-warning {
-            font-size: 0.9rem;
-            color: #ff6b6b;
-            margin-top: 5px;
-            background: #4a1e2e;
-            padding: 5px;
-            border-radius: 20px;
-            display: inline-block;
-            font-weight: bold;
-        }
         .reset-btn {
             background: #5a9e7a;
             box-shadow: 0 6px 0 #2d6a4f, 0 8px 14px rgba(0,0,0,0.3);
@@ -334,7 +324,6 @@
 
     <button class="btn-primary" id="collectBtn"> CHOMP NEARBY (100ft)</button>
     <div id="timerDisplay" class="timer-text"></div>
-    <div id="locationWarning" class="location-warning" style="display: none;"></div>
     <div class="status-message" id="statusMsg">Tap to find gator snacks within 100 feet</div>
 
     <div id="localWarning" class="warning-box" style="display: none;"></div>
@@ -364,14 +353,6 @@
     const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000;
     const TIMER_STORAGE_KEY = 'gator_last_chomp';
 
-    // Louisiana bounding box (rough but effective for the game)
-    const LA_BOUNDS = {
-        minLat: 28.8,  // Southern tip ~29.0 but giving buffer
-        maxLat: 33.1,  // Northern border
-        minLng: -94.1, // Western border
-        maxLng: -88.7  // Eastern border
-    };
-
     // Create unique storage key per device
     function getStorageKey() {
         const screenInfo = `${screen.width}x${screen.height}x${screen.colorDepth}`;
@@ -400,7 +381,6 @@
     let isLoading = false;
     let playerName = '';
     let timerInterval = null;
-    let lastLocationCheck = null;
 
     // DOM elements
     const scoreSpan = document.getElementById('scoreDisplay');
@@ -413,25 +393,9 @@
     const playerIdBadge = document.getElementById('playerIdBadge');
     const playerNameInput = document.getElementById('playerNameInput');
     const timerDisplay = document.getElementById('timerDisplay');
-    const locationWarning = document.getElementById('locationWarning');
 
     // Show Gator ID with last 5 digits
     playerIdBadge.innerHTML = `🐊 Gator ID: ${STORAGE_KEY.slice(-5)} 🐊`;
-
-    // ---------- LOCATION CHECK ----------
-    function isInLouisiana(lat, lng) {
-        return lat >= LA_BOUNDS.minLat && lat <= LA_BOUNDS.maxLat &&
-               lng >= LA_BOUNDS.minLng && lng <= LA_BOUNDS.maxLng;
-    }
-
-    function showLocationWarning(message) {
-        locationWarning.innerText = message;
-        locationWarning.style.display = 'block';
-    }
-
-    function hideLocationWarning() {
-        locationWarning.style.display = 'none';
-    }
 
     // ---------- TIMER FUNCTIONS ----------
     function getLastChompTime() {
@@ -455,14 +419,14 @@
         const timeLeft = lastChomp + COOLDOWN_MS - now;
         
         if (timeLeft > 0) {
-            // Button is disabled due to timer
+            // Button is disabled
             collectBtn.disabled = true;
             const minutesLeft = Math.floor(timeLeft / 60000);
             const secondsLeft = Math.floor((timeLeft % 60000) / 1000);
             timerDisplay.innerText = `⏳ Ready in ${minutesLeft}:${secondsLeft.toString().padStart(2, '0')}`;
             return true;
         } else {
-            // Button is enabled (timer-wise), but location check will happen when clicked
+            // Button is enabled
             collectBtn.disabled = false;
             timerDisplay.innerText = `✅ Ready to chomp!`;
             return false;
@@ -482,7 +446,7 @@
         timerInterval = setInterval(updateButtonState, 1000);
     }
 
-    // Modify handleCollect to check location first
+    // Modify handleCollect to set the timer
     async function handleCollect() {
         if (isLoading) return;
 
@@ -507,17 +471,6 @@
             async (position) => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
-                
-                // Check if in Louisiana
-                if (!isInLouisiana(lat, lng)) {
-                    statusDiv.innerText = "❌ Gators only roam in Louisiana!";
-                    showLocationWarning("🐊 You're outside Louisiana - no gators here!");
-                    isLoading = false;
-                    collectBtn.disabled = false;
-                    return;
-                }
-                
-                hideLocationWarning();
                 statusDiv.innerText = `📍 Scanning 100ft around your position...`;
 
                 try {
